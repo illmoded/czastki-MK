@@ -2,7 +2,6 @@
 #include "random.h"
 
 const int nParticle	= 1000;
-const int mod = 4; // wersja klasy: 1 - koła, 2 - elipsy moje, 3 - elipsy z zewn. biblioteką, 4 - 1+3 z dziedziczeniem
 
 int main(int argc, char const *argv[])
 {

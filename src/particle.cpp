@@ -1,7 +1,5 @@
 #include "particle.h"
 
-// --- class particle --- //
-
 particle::particle(double posX, double posY, double rad_e, double rad_f, double angle)
 {
 	X = posX;
