@@ -2,7 +2,7 @@
 #include "random.h"
 #include "gnuplot-iostream.h"
 
-const int nParticle	= 1000;
+const int nParticle	= 100;
 const int nStep = 1000;
 const int xBox[2] = {-50, 50};
 const int yBox[2] = {-50, 50};
@@ -71,7 +71,7 @@ int main(int argc, char const *argv[]) // main
 	std::fstream data("data", std::fstream::out);
 
 	particle* vParticle[nParticle];
-	GenerateRandom(vParticle);
+	GenerateLattice(vParticle);
 
 	// for (int iParticle = 0; iParticle < nParticle; ++iParticle) { // zapis obiektów do pliku
 	// 	vParticle[iParticle]->DrawParticle(data);
