@@ -1,24 +1,44 @@
 #include "particle.h"
 
-particle::particle(double posX, double posY, double rad_e, double rad_f, double angle)
+// okręgi
+particle::particle(double posX, double posY, double rad)
 {
 	X = posX;
 	Y = posY;
-	E = rad_e;
-	F = rad_f;
-	ANG = angle;
+	E = rad;
+	F = rad;
 }
 
-particle::particle(double posX, double posY, double rad_e, double rad_f, double angle, double velX, double velY)
+particle::particle(double posX, double posY, double rad, double velX, double velY)
 {
 	X = posX;
 	Y = posY;
-	E = rad_e;
-	F = rad_f;
-	ANG = angle;
-	V[1] = velX;
-	V[2] = velY;
+	E = rad;
+	F = rad;
+	V[0] = velX;
+	V[1] = velY;
 }
+
+// elipsy
+// particle::particle(double posX, double posY, double rad_e, double rad_f, double angle)
+// {
+// 	X = posX;
+// 	Y = posY;
+// 	E = rad_e;
+// 	F = rad_f;
+// 	ANG = angle;
+// }
+
+// particle::particle(double posX, double posY, double rad_e, double rad_f, double angle, double velX, double velY)
+// {
+// 	X = posX;
+// 	Y = posY;
+// 	E = rad_e;
+// 	F = rad_f;
+// 	ANG = angle;
+// 	V[1] = velX;
+// 	V[2] = velY;
+// }
 
 void particle::DrawParticle(std::fstream& file)
 {
@@ -33,6 +53,47 @@ void particle::DrawParticle(std::fstream& file)
 
 		file << xo << "\t" << yo << std::endl;
 	}
+}
+
+std::vector<std::pair<double, double> > particle::DrawParticle()
+{
+	std::vector<std::pair<double, double> > xy_pts;
+
+	for (int i = 0; i < N; ++i) {
+		double alpha = static_cast<double>(i)/static_cast<double>(N) * 2*M_PI;
+
+		double x = X + E*cos(alpha);
+		double y = Y + F*sin(alpha);
+
+		double xo = (x-X)*cos(ANG)-(y-Y)*sin(ANG)+X;
+		double yo = (x-X)*sin(ANG)+(y-Y)*cos(ANG)+Y;
+
+		xy_pts.push_back(std::make_pair(xo, yo));
+	}
+
+	return xy_pts;
+}
+
+void particle::Move (double step)
+{
+	X += step*V[0];
+	Y += step*V[1];
+}
+
+void particle::ScaleAll(double s)
+{
+	X *= s;
+	Y *= s;
+	E *= s;
+	F *= s;
+	V[0] *=s;
+	V[1] *=s;
+}
+
+void particle::Translate(double xVec, double yVec)
+{
+	X += xVec;
+	Y += yVec;
 }
 
 bool CheckCollision(particle* iParticle, particle** vParticle, int I)

@@ -1,4 +1,4 @@
-CC := g++ -std=c++11
+CC := g++
 SRCDIR := src
 BUILDDIR := build
 BINDIR := bin
@@ -7,10 +7,10 @@ TARGET := main
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -c -Wall
+CFLAGS := -c
 INC := -I include
 
-.PHONY: run clean all
+.PHONY: run clean clean-all all
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	mkdir -p $(BUILDDIR)
@@ -18,13 +18,18 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 
 $(TARGET): $(OBJECTS)
 	mkdir -p $(BINDIR)
-	$(CC) $^ -o $(BINDIR)/$(TARGET)
+	$(CC) $^ -o $(BINDIR)/$(TARGET) -lboost_iostreams -lboost_system -lboost_filesystem
 
 all: $(TARGET)
 
 clean:
-	-rm -rf $(BUILDDIR)
-	-rm -rf $(BINDIR)
+	rm -rf $(BUILDDIR)
+	rm -rf $(BINDIR)
+
+clean-all:
+	rm -rf $(BUILDDIR)
+	rm -rf $(BINDIR)
+	rm -f data
 
 run: $(TARGET)
 	./$(BINDIR)/$(TARGET)
