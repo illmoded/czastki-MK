@@ -9,6 +9,20 @@ const int yBox[2] = {-50, 50};
 const double scale = 1;
 const double dt = 0.1;
 
+bool OutOfBox(particle* iParticle)
+{
+	if(iParticle->X > 0.5 || iParticle->X < -0.5 || iParticle->Y > 0.5 || iParticle->Y < -0.5) return true;
+	return false;
+}
+
+void ReturnToBox(particle* iParticle)
+{
+	if(iParticle->X > 0.5) iParticle->X -= 1.;
+	if(iParticle->X < -0.5) iParticle->X += 1.;
+	if(iParticle->Y > 0.5) iParticle->Y -= 1.;
+	if(iParticle->Y < -0.5) iParticle->Y += 1.;
+}
+
 void Draw(particle** vParticle) // rysowanie GNUplot
 {
 	Gnuplot gp;
@@ -44,21 +58,18 @@ void GenerateRandom(particle** vParticle)
 
 void GenerateLattice(particle** vParticle)
 {
+	rnd* R = new rnd(time(NULL));
 	double r = 0.5;
+
 	for (int i = 0; i < sqrt(nParticle); ++i) { // tworzenie obiektów: sieć kwadratowa
 		for (int j = 0; j < sqrt(nParticle); ++j) {
-			vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*r*i, 2*r*j, r);
+			vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*r*i, 2*r*j, r, R->jedn(-1, 1), R->jedn(-1, 1));
 		}
 	}
 
-	if((int)sqrt(nParticle)%2)
-		for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
-			vParticle[iParticle]->Translate(-r*sqrt(nParticle), -r*sqrt(nParticle));
-		}
-	else
-		for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
-			vParticle[iParticle]->Translate(-r*sqrt(nParticle)+r, -r*sqrt(nParticle)+r);
-		}
+	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
+		vParticle[iParticle]->Translate(-r*sqrt(nParticle)+r, -r*sqrt(nParticle)+r);
+	}
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle)
 	{
@@ -77,6 +88,14 @@ int main(int argc, char const *argv[]) // main
 	// 	vParticle[iParticle]->DrawParticle(data);
 	// }
 	
+	for (int iStep = 0; iStep < nStep; ++iStep) {
+		for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
+			vParticle[iParticle]->Move(dt);
+			if (OutOfBox(vParticle[iParticle])) ReturnToBox(vParticle[iParticle]);
+		}
+		// data << vParticle[0]->X << "\t" << vParticle[0]->Y << std::endl;
+	}
+
 	Draw(vParticle); // rysowanie w GNUplot
 	
 	return 0;
