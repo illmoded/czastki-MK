@@ -29,7 +29,7 @@ public:
 	double V[2];
 
 private:
-	static const int N = 100;
+	static const int N = 50;
 	static const double M = 1.0;
 };
 
