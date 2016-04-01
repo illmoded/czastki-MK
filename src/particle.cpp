@@ -36,8 +36,8 @@ particle::particle(double posX, double posY, double rad, double velX, double vel
 // 	E = rad_e;
 // 	F = rad_f;
 // 	ANG = angle;
-// 	V[1] = velX;
-// 	V[2] = velY;
+// 	V[0] = velX;
+// 	V[1] = velY;
 // }
 
 void particle::DrawParticle(std::fstream& file)
@@ -80,14 +80,12 @@ void particle::Move (double step)
 	Y += step*V[1];
 }
 
-void particle::ScaleAll(double s)
+void particle::ScalePosition(double s)
 {
 	X *= s;
 	Y *= s;
 	E *= s;
 	F *= s;
-	V[0] *=s;
-	V[1] *=s;
 }
 
 void particle::Translate(double xVec, double yVec)

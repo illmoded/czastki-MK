@@ -18,7 +18,7 @@ public:
 	void DrawParticle(std::fstream& file);
 	std::vector<std::pair<double, double> > DrawParticle();
 	void Move(double step);
-	void ScaleAll(double s);
+	void ScalePosition(double s);
 	void Translate(double xVec, double yVec);
 
 	double X;
