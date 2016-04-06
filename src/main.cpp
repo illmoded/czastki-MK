@@ -3,13 +3,37 @@
 #include "gnuplot-iostream.h"
 
 const int nParticle	= 100;
-const int nStep = 100;
+const int nStep = 1000;
 const double xBox[2] = {-0.5, 0.5};
 const double yBox[2] = {-0.5, 0.5};
-const double dt = 0.01;
+const double dt = 0.02;
 const double s = 1.;
-const double r = 0.025;
+const double r = 0.01;
 const double offset = 0.1;
+const double T = .1;
+
+void MakeHistogram(particle** vParticle)
+{
+	int M = 15;
+	double a = 0.;
+	double b = 0.3;
+	double v;
+	int H[M] = {0};
+
+	std::fstream data("data", std::fstream::out);
+
+	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
+		double vx = vParticle[iParticle]->V[0];
+		double vy = vParticle[iParticle]->V[1];
+
+		v = sqrt(vx*vx+vy*vy);
+		for (int i = 0; i < M; ++i) {
+			if (v > a+(b-a)/M*i && v < a+(b-a)/M*(i+1)) H[i]++;
+		}
+	}
+
+	for (int i = 0; i < M; ++i) data << H[i] << std::endl;
+}
 
 bool OutOfBox(particle* iParticle)
 {
@@ -20,8 +44,9 @@ bool OutOfBox(particle* iParticle)
 
 bool OutOfBox2(particle* iParticle)
 {
-	if(	iParticle->X < xBox[0]+r || iParticle->X > xBox[1]-r ||
-		iParticle->Y < yBox[0]+r || iParticle->Y > yBox[1]-r) return true;
+	double rr = iParticle->R;
+	if(	iParticle->X < xBox[0]+rr || iParticle->X > xBox[1]-rr ||
+		iParticle->Y < yBox[0]+rr || iParticle->Y > yBox[1]-rr) return true;
 	return false;
 }
 
@@ -35,14 +60,15 @@ void ReturnToBox(particle* iParticle)
 
 void BounceOffBox(particle* iParticle)
 {
-	double r = iParticle->E;
-	if(iParticle->X < xBox[0]+r || iParticle->X > xBox[1]-r) iParticle->V[0] *= -1.;
-	if(iParticle->Y < yBox[0]+r || iParticle->Y > yBox[1]-r) iParticle->V[1] *= -1.;
+	double rr = iParticle->R;
+	if(iParticle->X < xBox[0]+rr || iParticle->X > xBox[1]-rr) iParticle->V[0] *= -1.;
+	if(iParticle->Y < yBox[0]+rr || iParticle->Y > yBox[1]-rr) iParticle->V[1] *= -1.;
 }
 
 void Draw(particle** vParticle) // rysowanie GNUplot (debug)
 {
 	Gnuplot gp;
+
 	std::vector<std::pair<double, double> > boxPoints;
 	std::vector<boost::tuple<double, double, double> > vCircle;
 
@@ -56,7 +82,7 @@ void Draw(particle** vParticle) // rysowanie GNUplot (debug)
 		vCircle.push_back(boost::make_tuple(
 			vParticle[iParticle]->X, 
 			vParticle[iParticle]->Y, 
-			vParticle[iParticle]->E)
+			vParticle[iParticle]->R)
 		);
 	}
 
@@ -66,12 +92,12 @@ void Draw(particle** vParticle) // rysowanie GNUplot (debug)
 	gp.send1d(boxPoints);
 }
 
-void Animate(particle **vParticle) // liczenie + animowanie
+void Animate(particle** vParticle) // liczenie + animowanie
 {
 	Gnuplot gp;
-
 	gp << "set terminal wxt size 600,600\nset key off\n";
 
+	std::vector<std::pair<int, int> > vPairs;
 	std::vector<std::pair<double, double> > boxPoints;
 	std::vector<boost::tuple<double, double, double> > vCircle;
 
@@ -81,8 +107,17 @@ void Animate(particle **vParticle) // liczenie + animowanie
 	boxPoints.push_back(std::make_pair(xBox[1], yBox[0]));
 	boxPoints.push_back(std::make_pair(xBox[0], yBox[0]));
 
-
 	for (int iStep = 0; iStep < nStep; ++iStep) {
+		vPairs = Collision(vParticle, nParticle);
+		if (vPairs.size() != 0) {
+			for (std::vector<std::pair<int, int> >::iterator vec = vPairs.begin(); vec != vPairs.end(); ++vec) {
+				int a = vec->first;
+				int b = vec->second;
+
+				EvaluateVelocities(vParticle[a], vParticle[b]);
+			}
+		}
+
 		for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
 			vParticle[iParticle]->Move(dt);
 			// if (OutOfBox(vParticle[iParticle])) ReturnToBox(vParticle[iParticle]);
@@ -91,7 +126,7 @@ void Animate(particle **vParticle) // liczenie + animowanie
 			vCircle.push_back(boost::make_tuple(
 				vParticle[iParticle]->X, 
 				vParticle[iParticle]->Y, 
-				vParticle[iParticle]->E)
+				vParticle[iParticle]->R)
 			);
 		}
 
@@ -100,8 +135,37 @@ void Animate(particle **vParticle) // liczenie + animowanie
 		gp.send1d(boxPoints);
 		gp.flush();
 
+		vPairs.clear();
 		vCircle.clear();
 	}
+}
+
+void Evaluate(particle** vParticle) // liczenie + histogram prędkości
+{
+	std::vector<std::pair<int, int> > vPairs;
+
+	for (int iStep = 0; iStep < nStep; ++iStep) {
+		vPairs = Collision(vParticle, nParticle);
+		if (vPairs.size() != 0) {
+			for (std::vector<std::pair<int, int> >::iterator vec = vPairs.begin(); vec != vPairs.end(); ++vec) {
+				int a = vec->first;
+				int b = vec->second;
+
+				EvaluateVelocities(vParticle[a], vParticle[b]);
+			}
+		}
+
+		for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
+			vParticle[iParticle]->Move(dt);
+			// if (OutOfBox(vParticle[iParticle])) ReturnToBox(vParticle[iParticle]);
+			if (OutOfBox2(vParticle[iParticle])) BounceOffBox(vParticle[iParticle]);
+		}
+
+		std::cout << "\rPoliczono: " << iStep+1 << "/" << nStep << std::flush;
+	}
+
+	std::cout << std::endl;
+	MakeHistogram(vParticle);
 }
 
 void GenerateRandom(particle** vParticle)
@@ -110,21 +174,21 @@ void GenerateRandom(particle** vParticle)
 	int err = 0;
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) { // tworzenie obiektów: losowe
-		std::cout << "\r" << iParticle+1 << "/" << nParticle;
+		std::cout << "\rUtworzono: " << iParticle+1 << "/" << nParticle << std::flush;
 		vParticle[iParticle] = new particle (
 											R->jedn(xBox[0]+r, xBox[1]-r), 
 											R->jedn(yBox[0]+r, yBox[1]-r), 
 											r, 
-											R->jedn(-1, 1), 
-											R->jedn(-1, 1)
+											R->gauss(0, T), 
+											R->gauss(0, T)
 										);
 		while (CheckCollision(vParticle[iParticle], vParticle, iParticle)) {
 			vParticle[iParticle] = new particle (
 												R->jedn(xBox[0]+r, xBox[1]-r), 
 												R->jedn(yBox[0]+r, yBox[1]-r), 
 												r, 
-												R->jedn(-1, 1), 
-												R->jedn(-1, 1)
+												R->gauss(0, T), 
+												R->gauss(0, T)
 											);
 			if (++err == 10000) throw std::exception();
 		}
@@ -143,12 +207,17 @@ void GenerateLattice(particle** vParticle)
 
 	for (int i = 0; i < sqrt(nParticle); ++i) { // tworzenie obiektów: sieć kwadratowa
 		for (int j = 0; j < sqrt(nParticle); ++j) {
-			vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*i+offset, 2*j+offset, 1-2*offset, R->jedn(-1, 1), R->jedn(-1, 1));
+			vParticle[i*(int)sqrt(nParticle)+j] = new particle(	2*i+offset, 
+																2*j+offset, 
+																1-2*offset, 
+																R->gauss(0, T), 
+																R->gauss(0, T)
+															);
 		}
 	}
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
-		vParticle[iParticle]->Translate(-sqrt(nParticle)+1, -sqrt(nParticle)+1);
+		vParticle[iParticle]->Translate(-sqrt(nParticle)+1-offset, -sqrt(nParticle)+1-offset);
 	}
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
@@ -162,6 +231,7 @@ int main(int argc, char const *argv[]) // main
 	GenerateRandom(vParticle);
 	// Draw(vParticle);
 	Animate(vParticle);
-	
+	// Evaluate(vParticle);
+
 	return 0;
 }

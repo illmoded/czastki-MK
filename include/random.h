@@ -70,4 +70,5 @@ double rnd::levy(double alfa = 1.)
     double p2 = cos(alfa*T-T)/W;
     return p1*pow(p2,(1.-alfa)/alfa);
 }
+
 #endif

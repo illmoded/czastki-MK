@@ -1,38 +1,35 @@
 #ifndef _PARTICLE_H
 #define _PARTICLE_H
 
-#include <fstream>
 #include <vector>
-#include "collision.h"
+#include <stdio.h>
+#include <math.h>
 
 class particle
 {
 public:
-	// (posX, posY) - pozycja środka; (rad_e, rad_f) - długości półosi / rad - promień; angle - kąt obrotu
+	// (posX, posY) - pozycja środka; rad - promień; (velX, velY) - współrzędne prędkości
 	particle(double posX, double posY, double rad);
 	particle(double posX, double posY, double rad, double velX, double velY);
-	// particle(double posX, double posY, double rad_e, double rad_f, double angle);
-	// particle(double posX, double posY, double rad_e, double rad_f, double angle, double velX, double velY);
 	~particle();
 
-	void DrawParticle(std::fstream& file);
-	std::vector<std::pair<double, double> > DrawParticle();
+	void Flush();
 	void Move(double step);
 	void ScalePosition(double s);
 	void Translate(double xVec, double yVec);
+	double GetMass();
 
 	double X;
 	double Y;
-	double E;
-	double F;
-	double ANG;
+	double R;
 	double V[2];
 
 private:
-	static const int N = 50;
 	static const double M = 1.0;
 };
 
 bool CheckCollision(particle* iParticle, particle** vParticle, int I);
+std::vector<std::pair<int, int> > Collision(particle** vParticle, int nParticle);
+void EvaluateVelocities(particle* first, particle* second);
 
 #endif
