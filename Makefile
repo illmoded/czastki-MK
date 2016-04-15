@@ -7,14 +7,14 @@ TARGET := main
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -c -Wall
+CXXFLAGS := -c -Wall
 INC := -I include
 
 .PHONY: run clean clean-all all
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	mkdir -p $(BUILDDIR)
-	$(CC) $(CFLAGS) $(INC) -o $@ $<
+	$(CC) $(CXXFLAGS) $(INC) -o $@ $<
 
 $(TARGET): $(OBJECTS)
 	mkdir -p $(BINDIR)
@@ -30,6 +30,7 @@ clean-all:
 	rm -rf $(BUILDDIR)
 	rm -rf $(BINDIR)
 	rm -f data
+	rm -f fit*
 
 run: $(TARGET)
 	./$(BINDIR)/$(TARGET)

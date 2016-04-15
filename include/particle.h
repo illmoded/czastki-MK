@@ -22,7 +22,8 @@ public:
 	double X;
 	double Y;
 	double R;
-	double V[2];
+	double VX;
+	double VY;
 
 private:
 	static const double M = 1.0;

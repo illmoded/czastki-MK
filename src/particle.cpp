@@ -13,20 +13,20 @@ particle::particle(double posX, double posY, double rad, double velX, double vel
 	X = posX;
 	Y = posY;
 	R = rad;
-	V[0] = velX;
-	V[1] = velY;
+	VX = velX;
+	VY = velY;
 }
 
 void particle::Flush()
 {
 	printf("X:\tY:\tR:\tVx:\tVy:\n");
-	printf("%f\t%f\t%f\t%f\t%f\n", X, Y, R, V[0], V[1]);
+	printf("%f\t%f\t%f\t%f\t%f\n", X, Y, R, VX, VY);
 }
 
 void particle::Move(double step)
 {
-	X += step*V[0];
-	Y += step*V[1];
+	X += step*VX;
+	Y += step*VY;
 }
 
 void particle::ScalePosition(double s)
@@ -75,13 +75,13 @@ std::vector<std::pair<int, int> > Collision(particle** vParticle, int nParticle)
 		double y1 = vParticle[i]->Y;
 		double r1 = vParticle[i]->R;
 
-		for (int j = i; j < nParticle; ++j) {
+		for (int j = i+1; j < nParticle; ++j) {
 			double x2 = vParticle[j]->X;
 			double y2 = vParticle[j]->Y;
 			double r2 = vParticle[j]->R;
 
 			double d = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2));
-			if (d <= r1+r2 && i != j) {
+			if (d <= r1+r2) {
 				vCol.push_back(std::make_pair(i, j));
 			}			
 		}
@@ -94,16 +94,16 @@ void EvaluateVelocities(particle* first, particle* second)
 {
 	double x1 = first->X;
 	double y1 = first->Y;
-	double vx1 = first->V[0];
-	double vy1 = first->V[1];
+	double vx1 = first->VX;
+	double vy1 = first->VY;
 	double v1 = sqrt(vx1*vx1+vy1*vy1);
 	double costh1 = vx1/v1;
 	double sinth1 = vy1/v1;
 
 	double x2 = second->X;
 	double y2 = second->Y;
-	double vx2 = second->V[0];
-	double vy2 = second->V[1];
+	double vx2 = second->VX;
+	double vy2 = second->VY;
 	double v2 = sqrt(vx2*vx2+vy2*vy2);
 	double costh2 = vx2/v2;
 	double sinth2 = vy2/v2;
@@ -119,8 +119,8 @@ void EvaluateVelocities(particle* first, particle* second)
 	double wm2 = v2*(costh2*cosfi+sinth2*sinfi);
 	double wn2 = v1*m*(k+1)/(m+1)*(sinth1*cosfi-costh1*sinfi)+v2*(1-k*m)/(m+1)*(sinth2*cosfi-costh2*sinfi);
 
-	first->V[0] = wm1*cosfi-wn1*sinfi;
-	first->V[1] = wm1*sinfi+wn1*cosfi;;
-	second->V[0] = wm2*cosfi-wn2*sinfi;
-	second->V[1] = wm2*sinfi+wn2*cosfi;
+	first->VX = wm1*cosfi-wn1*sinfi;
+	first->VY = wm1*sinfi+wn1*cosfi;;
+	second->VX = wm2*cosfi-wn2*sinfi;
+	second->VY = wm2*sinfi+wn2*cosfi;
 }
