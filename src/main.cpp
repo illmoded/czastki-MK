@@ -18,7 +18,7 @@ void MakeHistogram(particle** vParticle)
 	double a = 0.;
 	double b = 0.3;
 	double v;
-	int H[M] = {};
+	int H[M]; //= {};
 
 	std::fstream data("data", std::fstream::out);
 
@@ -81,8 +81,8 @@ void Draw(particle** vParticle) // rysowanie GNUplot (debug)
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
 		vCircle.push_back(boost::make_tuple(
-			vParticle[iParticle]->X, 
-			vParticle[iParticle]->Y, 
+			vParticle[iParticle]->X,
+			vParticle[iParticle]->Y,
 			vParticle[iParticle]->R)
 		);
 		data << vParticle[iParticle]->X << "\t" << vParticle[iParticle]->Y << "\t" << vParticle[iParticle]->R << std::endl;
@@ -126,8 +126,8 @@ void Animate(particle** vParticle) // liczenie + animowanie
 			if (OutOfBox2(vParticle[iParticle])) BounceOffBox(vParticle[iParticle]);
 
 			vCircle.push_back(boost::make_tuple(
-				vParticle[iParticle]->X, 
-				vParticle[iParticle]->Y, 
+				vParticle[iParticle]->X,
+				vParticle[iParticle]->Y,
 				vParticle[iParticle]->R)
 			);
 		}
@@ -178,18 +178,18 @@ void GenerateRandom(particle** vParticle)
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) { // tworzenie obiektów: losowe
 		std::cout << "\rUtworzono: " << iParticle+1 << "/" << nParticle << std::flush;
 		vParticle[iParticle] = new particle (
-											R->jedn(xBox[0]+r, xBox[1]-r), 
-											R->jedn(yBox[0]+r, yBox[1]-r), 
-											r, 
-											R->gauss(0, T), 
+											R->jedn(xBox[0]+r, xBox[1]-r),
+											R->jedn(yBox[0]+r, yBox[1]-r),
+											r,
+											R->gauss(0, T),
 											R->gauss(0, T)
 										);
 		while (CheckCollision(vParticle[iParticle], vParticle, iParticle)) {
 			vParticle[iParticle] = new particle (
-												R->jedn(xBox[0]+r, xBox[1]-r), 
-												R->jedn(yBox[0]+r, yBox[1]-r), 
-												r, 
-												R->gauss(0, T), 
+												R->jedn(xBox[0]+r, xBox[1]-r),
+												R->jedn(yBox[0]+r, yBox[1]-r),
+												r,
+												R->gauss(0, T),
 												R->gauss(0, T)
 											);
 			if (++err == 10000) {
@@ -198,7 +198,7 @@ void GenerateRandom(particle** vParticle)
 			}
 		}
 		err = 0;
-	}	
+	}
 	std::cout << std::endl;
 
 	for (int iParticle = 0; iParticle < nParticle; ++iParticle) {
@@ -212,10 +212,10 @@ void GenerateLattice(particle** vParticle)
 
 	for (int i = 0; i < sqrt(nParticle); ++i) { // tworzenie obiektów: sieć kwadratowa
 		for (int j = 0; j < sqrt(nParticle); ++j) {
-			vParticle[i*(int)sqrt(nParticle)+j] = new particle(	2*i+offset, 
-																2*j+offset, 
-																1-2*offset, 
-																R->gauss(0, T), 
+			vParticle[i*(int)sqrt(nParticle)+j] = new particle(	2*i+offset,
+																2*j+offset,
+																1-2*offset,
+																R->gauss(0, T),
 																R->gauss(0, T)
 															);
 		}
@@ -236,16 +236,16 @@ void GenerateHexagonal(particle** vParticle)
 
 	for (int i = 0; i < sqrt(nParticle); ++i) { // tworzenie obiektów: sieć kwadratowa
 		for (int j = 0; j < sqrt(nParticle); ++j) {
-			if (j%2) vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*i+offset, 
-																		2*j+offset, 
-																		1-2*offset, 
-																		R->gauss(0, T), 
+			if (j%2) vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*i+offset,
+																		2*j+offset,
+																		1-2*offset,
+																		R->gauss(0, T),
 																		R->gauss(0, T)
 																	);
-			else vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*i+1+offset, 
-																	2*j+offset, 
-																	1-2*offset, 
-																	R->gauss(0, T), 
+			else vParticle[i*(int)sqrt(nParticle)+j] = new particle(2*i+1+offset,
+																	2*j+offset,
+																	1-2*offset,
+																	R->gauss(0, T),
 																	R->gauss(0, T)
 																);
 		}
@@ -264,7 +264,7 @@ int main(int argc, char const *argv[]) // main
 {
 	particle* vParticle[nParticle];
 	GenerateHexagonal(vParticle);
-	
+
 	Draw(vParticle);
 	// Animate(vParticle);
 	// Evaluate(vParticle);
